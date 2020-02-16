@@ -20,6 +20,7 @@ import { HttpClientModule } from '@angular/common/http';
     HttpClientModule,
     FormsModule
   ],
+  entryComponents: [ConfirmationDialogComponent],
   providers: [],
   bootstrap: [AppComponent]
 })

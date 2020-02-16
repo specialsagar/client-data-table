@@ -32,7 +32,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.dataSource = new ClientDataService(this.dataService);
-    this.dataSource.loadClients('index', 'asc', 1, 20, '');
+    this.dataSource.loadClients('id', 'asc', 1, 20, '');
   }
 
   loadClients() {
@@ -74,7 +74,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.dataSource.removeClient(element,this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value);
+        this.dataSource.removeClient(element.id,this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value);
       }
     });
   }

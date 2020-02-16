@@ -25,7 +25,7 @@ export class ClientDataService  implements DataSource<any> {
     this.loadingSubject.complete();
   }
 
-  loadClients(_sort = "index", _order = "asc", _page = 0, _limit = 20, _search_filter = "") {
+  loadClients(_sort = "id", _order = "asc", _page = 0, _limit = 20, _search_filter = "") {
 
     this.loadingSubject.next(true);
 
@@ -56,7 +56,7 @@ export class ClientDataService  implements DataSource<any> {
 
   modifyClient(data, _sort, _order, _page, _limit, _search_filter) {
     this.loadingSubject.next(true);
-    this.dataService.modifyClient(data).then(res => {
+    this.dataService.modifyClient(data.id, data).then(res => {
     this.dataService
       .findClients(_sort, _order, _page, _limit, _search_filter)
       .pipe(
