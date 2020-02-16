@@ -25,26 +25,26 @@ export class ClientDataService  implements DataSource<any> {
     this.loadingSubject.complete();
   }
 
-  loadClients(_sort = "id", _order = "asc", _page = 0, _limit = 20, _search_filter = "") {
+  loadClients(_sort = "id", _order = "asc", _page = 0, _limit = 20, _search_filter = "", _status="") {
 
     this.loadingSubject.next(true);
 
     this.dataService
-      .findClients(_sort, _order, _page, _limit, _search_filter)
+      .findClients(_sort, _order, _page, _limit, _search_filter, _status)
       .pipe(
         catchError(() => of([])),
         finalize(() => this.loadingSubject.next(false))
       )
       .subscribe(
-        clients => {this.listenerSubject.next(clients); console.log(clients);});
+        clients => {this.listenerSubject.next(clients)});
   }
 
-  removeClient(id, _sort, _order, _page, _limit, _search_filter) {
+  removeClient(id, _sort, _order, _page, _limit, _search_filter, _status) {
 
     this.loadingSubject.next(true);
     this.dataService.removeClient(id).then(res => {
     this.dataService
-      .findClients(_sort, _order, _page, _limit, _search_filter)
+      .findClients(_sort, _order, _page, _limit, _search_filter, _status)
       .pipe(
         catchError(() => of([])),
         finalize(() => this.loadingSubject.next(false))
@@ -54,11 +54,11 @@ export class ClientDataService  implements DataSource<any> {
   }
 
 
-  modifyClient(data, _sort, _order, _page, _limit, _search_filter) {
+  modifyClient(data, _sort, _order, _page, _limit, _search_filter, _status) {
     this.loadingSubject.next(true);
     this.dataService.modifyClient(data.id, data).then(res => {
     this.dataService
-      .findClients(_sort, _order, _page, _limit, _search_filter)
+      .findClients(_sort, _order, _page, _limit, _search_filter, _status)
       .pipe(
         catchError(() => of([])),
         finalize(() => this.loadingSubject.next(false))

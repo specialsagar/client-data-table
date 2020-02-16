@@ -19,11 +19,13 @@ export class AppComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = ['name', 'contact', 'organization', 'candidates', 'meetings', 'status', 'actions'];
   data: any[] = [];
   clone: any;
+  totalCount = 0;
 
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild('filter', { static: true }) filter: ElementRef;
+  @ViewChild('status', { static: true }) status: ElementRef;
 
   constructor(
     private dataService: DataServiceService,
@@ -33,10 +35,13 @@ export class AppComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.dataSource = new ClientDataService(this.dataService);
     this.dataSource.loadClients('id', 'asc', 1, 20, '');
+    this.dataService.clientCountSubject.subscribe((res)=>{
+      this.totalCount = res;
+    })
   }
 
   loadClients() {
-    this.dataSource.loadClients(this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value);
+    this.dataSource.loadClients(this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value, this.status.nativeElement.value);
   }
 
   ngAfterViewInit() {
@@ -53,6 +58,13 @@ export class AppComponent implements OnInit, AfterViewInit {
           this.loadClients();
         })
       ).subscribe();
+
+    fromEvent(this.status.nativeElement, 'change').pipe (
+      tap(() => {
+        this.paginator.pageIndex = 1;
+        this.loadClients();
+      })
+    ).subscribe();
 
     merge(this.sort.sortChange, this.paginator.page)
       .pipe(
@@ -74,7 +86,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.dataSource.removeClient(element.id,this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value);
+        this.dataSource.removeClient(element.id,this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value, this.status.nativeElement.value);
       }
     });
   }
@@ -98,7 +110,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         delete element.isEdit;
-        this.dataSource.modifyClient(element, this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value);
+        this.dataSource.modifyClient(element, this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value, this.status.nativeElement.value);
       }
     });
   }

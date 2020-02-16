@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { map } from "rxjs/operators";
-import { Observable } from "rxjs";
+import { map, tap } from "rxjs/operators";
+import { Observable, BehaviorSubject } from "rxjs";
 import { resolve } from 'url';
 
 const clientsDataURL = "http://localhost:3000/clients";
@@ -11,8 +11,9 @@ const clientsDataURL = "http://localhost:3000/clients";
 })
 export class DataServiceService {
   constructor(private http: HttpClient) {}
+  clientCountSubject = new BehaviorSubject(0);
   
-  findClients(_sort = "id", _order = "ASC", _page = 0, _limit = 20, _search_filter = ""): Observable<any[]> {
+  findClients(_sort = "id", _order = "ASC", _page = 0, _limit = 20, _search_filter = "", _status): Observable<any[]> {
     let paramObj = {
       _sort: _sort,
       _order: _order,
@@ -24,11 +25,19 @@ export class DataServiceService {
       paramObj['name_like'] = _search_filter;
     }
 
+    if(_status) {
+      paramObj['status'] = _status;
+    }
+
     
     return this.http.get(clientsDataURL, {
+        observe: 'response',
         params: new HttpParams({fromObject: paramObj})
       })
-      .pipe(map( res =>  res as any[]));
+      .pipe(
+        tap(res => { this.clientCountSubject.next(parseInt(res.headers.get('X-Total-Count')))}),
+        map( res =>  res.body as any[])
+        );
   }
 
   removeClient(id): Promise<any> {
