@@ -25,7 +25,7 @@ export class ClientDataService  implements DataSource<any> {
     this.loadingSubject.complete();
   }
 
-  loadClients(_sort = "id", _order = "ASC", _page = 0, _limit = 20, _search_filter = "") {
+  loadClients(_sort = "index", _order = "asc", _page = 0, _limit = 20, _search_filter = "") {
 
     this.loadingSubject.next(true);
 
@@ -35,7 +35,8 @@ export class ClientDataService  implements DataSource<any> {
         catchError(() => of([])),
         finalize(() => this.loadingSubject.next(false))
       )
-      .subscribe(products => this.listenerSubject.next(products));
+      .subscribe(
+        clients => {this.listenerSubject.next(clients); console.log(clients);});
   }
 
   removeClient(id, _sort, _order, _page, _limit, _search_filter) {
@@ -48,7 +49,7 @@ export class ClientDataService  implements DataSource<any> {
         catchError(() => of([])),
         finalize(() => this.loadingSubject.next(false))
       )
-      .subscribe(products => this.listenerSubject.next(products));
+      .subscribe(clients => this.listenerSubject.next(clients));
     })
   }
 
@@ -62,7 +63,7 @@ export class ClientDataService  implements DataSource<any> {
         catchError(() => of([])),
         finalize(() => this.loadingSubject.next(false))
       )
-      .subscribe(products => this.listenerSubject.next(products));
+      .subscribe(clients => this.listenerSubject.next(clients));
     })
   }
 }

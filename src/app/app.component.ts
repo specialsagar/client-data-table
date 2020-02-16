@@ -16,14 +16,13 @@ import { fromEvent, merge } from 'rxjs';
 export class AppComponent implements OnInit, AfterViewInit {
   title = 'client-datatables';
   dataSource: ClientDataService;  //client datasource
-  displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
+  displayedColumns: string[] = ['name', 'contact', 'organization', 'candidates', 'meetings', 'status', 'actions'];
   data: any[] = [];
   clone: any;
 
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild('name', { static: true }) sortName: MatSort;
-  @ViewChild('organization', { static: true }) sortOrg: MatSort;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild('filter', { static: true }) filter: ElementRef;
 
   constructor(
@@ -33,16 +32,15 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.dataSource = new ClientDataService(this.dataService);
-    this.dataSource.loadClients();
+    this.dataSource.loadClients('index', 'asc', 1, 20, '');
   }
 
   loadClients() {
-    this.dataService.findClients.apply(null, ...this.getParams());
+    this.dataSource.loadClients(this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value);
   }
 
   ngAfterViewInit() {
-    this.sortName.sortChange.subscribe(() => this.paginator.pageIndex = 0);
-    this.sortOrg.sortChange.subscribe(() => this.paginator.pageIndex = 0);
+    this.sort.sortChange.subscribe(() => this.paginator.pageIndex = 0);
     this.paginator.page.pipe(tap(() => this.loadClients())).subscribe();
 
 
@@ -56,13 +54,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         })
       ).subscribe();
 
-    merge(this.sortOrg.sortChange, this.paginator.page)
-      .pipe(
-        tap(() => this.loadClients())
-      )
-      .subscribe();
-      
-    merge(this.sortName.sortChange, this.paginator.page)
+    merge(this.sort.sortChange, this.paginator.page)
       .pipe(
         tap(() => this.loadClients())
       )
@@ -82,15 +74,19 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        let params = this.getParams();
-        params.unshift(element);
-        this.dataSource.removeClient.apply(this, ...params);
+        this.dataSource.removeClient(element,this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value);
       }
     });
   }
 
   discardChanges(element) {
-    element = { ...this.clone };
+    delete element.isEdit;
+    element.name = this.clone.name;
+    element.contact = this.clone.contact;
+    element.organization = this.clone.organization;
+    element.candidates = this.clone.candidates;
+    element.meetings = this.clone.meetings;
+    element.status = this.clone.status
   }
 
   save(element): void {
@@ -101,19 +97,9 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        let params = this.getParams();
         delete element.isEdit;
-        params.unshift(element);
-        this.dataSource.modifyClient.apply(this, ...params);
+        this.dataSource.modifyClient(element, this.sort.active, this.sort.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value);
       }
     });
-  }
-
-  getParams(): Array<any> {
-    if (this.sortOrg.active) {
-      return ['organization', this.sortName.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value]
-    } else {
-      return ['name', this.sortName.direction, (this.paginator.pageIndex + 1), this.paginator.pageSize, this.filter.nativeElement.value]
-    }
   }
 }
